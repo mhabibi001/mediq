@@ -5,6 +5,7 @@ import com.quantumx.mediq.model.Question;
 import com.quantumx.mediq.repository.CategoryRepository;
 import com.quantumx.mediq.repository.QuestionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,20 +28,23 @@ public class AdminController {
 
     @PostMapping("/add-question")
     public Question addQuestion(@RequestBody Question question) {
-        // Check if category is provided
         if (question.getCategory() == null || question.getCategory().getId() == null) {
             throw new IllegalArgumentException("Category is required");
         }
 
-        // Fetch the category from the database to ensure it exists
+        // Ensure the category exists in the database
         Category category = categoryRepository.findById(question.getCategory().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Category not found"));
 
-        // Assign the fetched category to the question
+        // Assign the category to the question
         question.setCategory(category);
 
-        // Save and return the question
         return questionRepository.save(question);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleIllegalArgumentException(IllegalArgumentException ex) {
+        return ex.getMessage();
+    }
 }
