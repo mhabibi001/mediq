@@ -31,6 +31,12 @@ public class Question {
     @Column(length = 1000)
     private String wrongAnswer3;
 
+    @Column(length = 500)
+    private String imageUrl;
+
+    @Column(length = 500)
+    private String imageFilename;
+
     // Getters and setters
 
     public Long getId() {
@@ -95,5 +101,21 @@ public class Question {
 
     public void setJustification(String justification) {
         this.justification = justification;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getImageFilename() {
+        return imageFilename;
+    }
+
+    public void setImageFilename(String imageFilename) {
+        this.imageFilename = imageFilename;
     }
 }
