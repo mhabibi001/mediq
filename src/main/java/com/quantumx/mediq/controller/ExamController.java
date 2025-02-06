@@ -69,8 +69,10 @@ public class ExamController {
                                 .sorted((a, b) -> ThreadLocalRandom.current().nextInt(-1, 2))
                                 .toList(),
                         q.getRightAnswer(),
-                        q.getImageUrl(),   // ✅ Ensure the image URL is mapped
-                        q.getImageFilename() // ✅ Ensure the image filename is mapped
+                        q.getImageUrl(),
+                        q.getImageFilename(),
+                        q.getJustificationImageName(),
+                        q.getJustificationImageUrl()
                 ))
                 .collect(Collectors.toList());
     }

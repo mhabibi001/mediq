@@ -49,7 +49,9 @@ public class AdminController {
     @PostMapping(value = "/add-question", consumes = "multipart/form-data")
     public ResponseEntity<?> addQuestion(
             @RequestPart("question") String questionJson,
-            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
+            @RequestPart(value = "image", required = false) MultipartFile imageFile,
+            @RequestPart(value = "justificationImage", required = false) MultipartFile justificationImageFile) {
+
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             Question question = objectMapper.readValue(questionJson, Question.class);
@@ -58,37 +60,54 @@ public class AdminController {
                 return ResponseEntity.badRequest().body("Category is required");
             }
 
-            Category category = categoryRepository.findById(question.getCategory().getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Category not found"));
-            question.setCategory(category);
-
+            // ✅ Upload Question Image
+            String questionImageUrl = null;
             if (imageFile != null && !imageFile.isEmpty()) {
-                // Validate file type
-                String contentType = imageFile.getContentType();
-                if (!isValidImageType(contentType)) {
-                    return ResponseEntity.badRequest().body("Only JPEG, JPG, and PNG file types are allowed");
+                String originalFilename = imageFile.getOriginalFilename();
+                String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                if (!fileExtension.matches("\\.(jpeg|jpg|png)$")) {
+                    return ResponseEntity.badRequest().body("Invalid file type. Only JPEG, JPG, and PNG are allowed.");
                 }
-
-                // Validate file size
-                if (imageFile.getSize() > 10 * 1024 * 1024) { // 10MB limit
-                    return ResponseEntity.badRequest().body("File size must not exceed 10MB");
+                if (imageFile.getSize() > 10 * 1024 * 1024) {
+                    return ResponseEntity.badRequest().body("File size exceeds 10MB limit.");
                 }
+                String uniqueFilename = System.currentTimeMillis() + "_" + originalFilename;
+                String s3Key = "question-image/" + uniqueFilename;
+                s3Client.putObject(new PutObjectRequest(bucketName, s3Key, imageFile.getInputStream(), null));
+                questionImageUrl = s3Client.getUrl(bucketName, s3Key).toString();
 
-                // Generate unique filename
-                String fileName = Instant.now().toEpochMilli() + "_" + imageFile.getOriginalFilename();
-                File file = convertMultiPartToFile(imageFile);
-                s3Client.putObject(new PutObjectRequest(bucketName, fileName, file));
-                question.setImageUrl(s3Client.getUrl(bucketName, fileName).toString());
-                question.setImageFilename(fileName);  // Store the filename
-                file.delete();
+                question.setImageUrl(questionImageUrl);
+                question.setImageFilename(uniqueFilename); // ✅ FIX: Ensure filename is saved
+            }
+
+            // ✅ Upload Justification Image
+            String justificationImageUrl = null;
+            if (justificationImageFile != null && !justificationImageFile.isEmpty()) {
+                String originalFilename = justificationImageFile.getOriginalFilename();
+                String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                if (!fileExtension.matches("\\.(jpeg|jpg|png)$")) {
+                    return ResponseEntity.badRequest().body("Invalid file type. Only JPEG, JPG, and PNG are allowed.");
+                }
+                if (justificationImageFile.getSize() > 10 * 1024 * 1024) {
+                    return ResponseEntity.badRequest().body("File size exceeds 10MB limit.");
+                }
+                String uniqueFilename = System.currentTimeMillis() + "_" + originalFilename;
+                String s3Key = "justification/" + uniqueFilename;
+                s3Client.putObject(new PutObjectRequest(bucketName, s3Key, justificationImageFile.getInputStream(), null));
+                justificationImageUrl = s3Client.getUrl(bucketName, s3Key).toString();
+
+                question.setJustificationImageUrl(justificationImageUrl);
+                question.setJustificationImageName(uniqueFilename); // ✅ FIX: Ensure filename is saved
             }
 
             questionRepository.save(question);
-            return ResponseEntity.ok("Question added successfully.");
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid JSON format");
+            return ResponseEntity.ok("Question added successfully!");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error processing request");
         }
     }
+
 
     private boolean isValidImageType(String contentType) {
         return contentType != null && (contentType.equals("image/jpeg") || contentType.equals("image/png") || contentType.equals("image/jpg"));
