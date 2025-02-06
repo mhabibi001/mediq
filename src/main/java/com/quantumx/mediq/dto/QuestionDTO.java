@@ -8,13 +8,18 @@ public class QuestionDTO {
     private String justification;
     private List<String> options;
     private String rightAnswer;
+    private String imageUrl; //
+    private String imageFilename; //
 
-    public QuestionDTO(Long id, String question, String justification, List<String> options, String rightAnswer) {
+
+    public QuestionDTO(Long id, String question, String justification, List<String> options, String rightAnswer, String imageUrl, String imageFilename) {
         this.id = id;
         this.question = question;
         this.justification = justification;
         this.options = options;
         this.rightAnswer = rightAnswer;
+        this.imageFilename = imageFilename;
+        this.imageUrl = imageUrl;
     }
 
     public Long getId() {
@@ -55,5 +60,21 @@ public class QuestionDTO {
 
     public void setRightAnswer(String rightAnswer) {
         this.rightAnswer = rightAnswer;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getImageFilename() {
+        return imageFilename;
+    }
+
+    public void setImageFilename(String imageFilename) {
+        this.imageFilename = imageFilename;
     }
 }

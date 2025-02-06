@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/exam")
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:3000") // Allow frontend access
 public class ExamController {
 
     @Autowired
@@ -38,8 +38,7 @@ public class ExamController {
 
     // Endpoint to fetch questions by category
     @GetMapping("/questions")
-    public List<QuestionDTO> getQuestions(@RequestParam(required = true) Long categoryId,
-                                          @RequestParam(required = true) int count) {
+    public List<QuestionDTO> getQuestions(@RequestParam Long categoryId, @RequestParam int count) {
         if (categoryId == null) {
             throw new IllegalArgumentException("Category ID cannot be null.");
         }
@@ -58,7 +57,7 @@ public class ExamController {
         // Shuffle the questions
         Collections.shuffle(questions);
 
-        // Map to QuestionDTO with shuffled options
+        // **Map Question entity to QuestionDTO**
         return questions.stream()
                 .limit(count)
                 .map(q -> new QuestionDTO(
@@ -69,7 +68,9 @@ public class ExamController {
                                 .stream()
                                 .sorted((a, b) -> ThreadLocalRandom.current().nextInt(-1, 2))
                                 .toList(),
-                        q.getRightAnswer()
+                        q.getRightAnswer(),
+                        q.getImageUrl(),   // ✅ Ensure the image URL is mapped
+                        q.getImageFilename() // ✅ Ensure the image filename is mapped
                 ))
                 .collect(Collectors.toList());
     }

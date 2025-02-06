@@ -31,10 +31,11 @@ public class Question {
     @Column(length = 1000)
     private String wrongAnswer3;
 
-    @Column(length = 500)
+    @Column(length = 500, name = "image_url")
     private String imageUrl;
 
-    @Column(length = 500)
+
+    @Column(length = 500, name = "image_filename")
     private String imageFilename;
 
     // Getters and setters
