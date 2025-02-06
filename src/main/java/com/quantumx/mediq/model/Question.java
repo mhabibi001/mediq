@@ -34,9 +34,14 @@ public class Question {
     @Column(length = 500, name = "image_url")
     private String imageUrl;
 
-
     @Column(length = 500, name = "image_filename")
     private String imageFilename;
+
+    @Column(length = 500, name = "justification_image_name")
+    private String justificationImageName;
+
+    @Column(length = 500, name = "justification_image_url")
+    private String justificationImageUrl;
 
     // Getters and setters
 
@@ -118,5 +123,21 @@ public class Question {
 
     public void setImageFilename(String imageFilename) {
         this.imageFilename = imageFilename;
+    }
+
+    public String getJustificationImageName() {
+        return justificationImageName;
+    }
+
+    public void setJustificationImageName(String justificationImageName) {
+        this.justificationImageName = justificationImageName;
+    }
+
+    public String getJustificationImageUrl() {
+        return justificationImageUrl;
+    }
+
+    public void setJustificationImageUrl(String justificationImageUrl) {
+        this.justificationImageUrl = justificationImageUrl;
     }
 }
